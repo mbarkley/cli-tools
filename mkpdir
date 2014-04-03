@@ -1,29 +1,53 @@
 #!/usr/bin/bash
 
+delete_flag="d"
+help_flag="h"
+
 dir="`pwd`"
 delete=0
+
+help_message=$(
+echo  Copy Java source files from a flat directory into proper package folders.
+echo
+echo Usage: $0 [OPTION]... [DIRECTORY]
+echo
+echo  -$help_flag        Display help
+echo  -$delete_flag        Delete original source files after copying.
+)
+
+while getopts $delete_flag$help_flag flag
+do
+  if [ $flag = $delete_flag ]
+  then
+    delete=1
+  elif [ $flag = $help_flag ]
+  then
+    echo "$help_message" >&2
+    exit 0
+  fi
+  # getopts does not shift arguments, so do it manually
+  shift $((OPTIND-1))
+done
+
 if [ $# -eq 1 ]
 then
-	dir="`echo $1 | sed s:/$::`"
-elif [ $# -eq 2 -a "$1" = "-d" ]
+  dir="$1"
+elif [ $# -ne 0 ]
 then
-	dir="`echo $2 | sed s:/$::`"
-	delete=1
-else
-	echo "usage: $0 [-d] dir" > 2
+  echo "$help_message" >&2
+  exit 1
 fi
 
-
-for f in $dir/*.java
+for f in `find "$dir" -type f -regex .*\.java$`
 do
-	pdir="`grep -m 1 package "$f" | sed s:package::1 | tr -d ';' | tr '.' '/' | tr -d ' '`"
-	mkdir -p "$dir/$pdir"
-	echo "Directory made: '${dir}/${pdir}'"
-	cp "$f" "$dir/$pdir/"
-	echo "$f copied to '${dir}/${pdir}'"
+	package_path="`grep -m 1 package "$f" | sed s:package::1 | tr -d ';' | tr '.' '/' | tr -d ' '`"
+  full_path=`echo -n $dir/$package_path | sed s://:/:g`
+
+	mkdir -pv "$full_path"
+	cp -v "$f" "$full_path"
+
 	if [ $delete -eq 1 ]
 	then
-		rm -f "$f"
-		echo "deleted $f"
+		rm -vf "$f"
 	fi
 done
