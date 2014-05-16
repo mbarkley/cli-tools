@@ -1,0 +1,35 @@
+#!/usr/bin/bash
+
+# Runs an errai build repeatedly until failure.
+# Good for finding hiesenbugs.
+
+GOALS=""
+while [ $# -gt 1 ]; do
+  GOALS="$GOALS $1"
+  shift
+done
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 {mvn goals...} {num_times}" >&2
+  exit 1
+fi
+
+OUTPUT_DIR="output"
+mkdir $OUTPUT_DIR
+
+i=$1
+while [ $i -gt 0 ]; do
+  echo "Starting build ${i}..."
+
+  mvn $GOALS 2>&1 | tee "$OUTPUT_DIR/out"
+  result=${PIPESTATUS[0]}
+
+  if [ $result -eq 1 ]; then
+    echo "Build ${i} failed. Exiting."
+    exit 0
+  fi
+
+  i=`expr $i - 1`
+done
+
+exit 0
