@@ -3,6 +3,7 @@
 # Runs an errai build repeatedly until failure.
 # Good for finding hiesenbugs.
 
+# Process opts
 GOALS=""
 while [ $# -gt 1 ]; do
   GOALS="$GOALS $1"
@@ -17,19 +18,28 @@ fi
 OUTPUT_DIR="output"
 mkdir $OUTPUT_DIR
 
-i=$1
-while [ $i -gt 0 ]; do
-  echo "Starting build ${i}..."
+TOTAL=$1
+i=1
+while [ $i -le $TOTAL ]; do
+  echo
+  echo ---------------------------------
+  echo Starting build $i
+  echo ---------------------------------
+  echo
 
   mvn $GOALS 2>&1 | tee "$OUTPUT_DIR/out"
   result=${PIPESTATUS[0]}
 
   if [ $result -eq 1 ]; then
-    echo "Build ${i} failed. Exiting."
+    echo
+    echo ---------------------------------
+    echo Build $i failed. Exiting.
+    echo ---------------------------------
+    echo
     exit 0
   fi
 
-  i=`expr $i - 1`
+  i=`expr $i + 1`
 done
 
 exit 0
