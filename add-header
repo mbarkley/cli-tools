@@ -1,0 +1,20 @@
+#!/usr/bin/bash
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 { header-file-path } { target-file }" >&2
+  exit 1
+fi
+
+HEADER_FILE="$1"
+TARGET_FILE="$2"
+
+WORKING_FILE=/tmp/working-copy-$$
+
+touch $WORKING_FILE
+cat $HEADER_FILE >> $WORKING_FILE
+cat $TARGET_FILE >> $WORKING_FILE
+
+cat $WORKING_FILE > $TARGET_FILE
+rm $WORKING_FILE
+
+exit 0
