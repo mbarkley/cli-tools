@@ -1,0 +1,25 @@
+#!/usr/bin/bash
+
+if [ $# -gt 2 -o $# -eq 0 ]; then
+  echo "usage: $0 [ search-directory ]" >&2
+  exit 1
+fi
+
+LICENSE_FILE="$1"
+
+if [ $# -eq 2 ]; then
+  DIR="$2"
+else
+  DIR="`pwd`"
+fi
+
+JAVA_FILES="`find "$DIR" -name *.java`"
+
+for f in $JAVA_FILES; do
+  if (cat "$f" | head -n 1 | grep "package"); then
+    echo Adding header to $f
+    add-header "$LICENSE_FILE" "$f"
+  fi
+done
+
+exit 0
